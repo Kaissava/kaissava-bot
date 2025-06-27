@@ -1,14 +1,15 @@
 {
-  "name": "kaissava-bot",
+  "name": "kaissava",
   "version": "1.0.0",
-  "main": "bot.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node bot.js"
+    "start": "node server.js && node bot.js" 
   },
   "engines": {
     "node": "18.x"
   },
   "dependencies": {
+    "express": "^4.18.2",
     "node-telegram-bot-api": "^0.61.0",
     "dotenv": "^16.0.0"
   }
