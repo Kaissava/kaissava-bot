@@ -7,12 +7,19 @@ const bot = new TelegramBot(token, { polling: true });
 
 const USERS_FILE = "users.json";
 
-// Kullanıcı kaydetme fonksiyonu
-function registerUser(user) {
-  let users = {};
+function loadUsers() {
   if (fs.existsSync(USERS_FILE)) {
-    users = JSON.parse(fs.readFileSync(USERS_FILE, "utf-8"));
+    return JSON.parse(fs.readFileSync(USERS_FILE, "utf-8"));
   }
+  return {};
+}
+
+function saveUsers(users) {
+  fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+}
+
+function registerUser(user) {
+  let users = loadUsers();
 
   if (!users[user.id]) {
     users[user.id] = {
@@ -25,18 +32,18 @@ function registerUser(user) {
       wallet: "",
       banned: false,
       tasks: [],
+      completed_tasks: [],
+      claimed_tasks: [],
       inventory: [],
       items_owned: 0,
-      completed_tasks: [],
-      claimed_tasks: []
+      equipment: {}
     };
-    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+    saveUsers(users);
     return true;
   }
   return false;
 }
 
-// /start komutu
 bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
   const user = msg.from;
@@ -49,12 +56,39 @@ bot.onText(/\/start/, (msg) => {
   }
 });
 
-// /play komutu - WebApp başlatma butonu
+bot.onText(/\/profile/, (msg) => {
+  const chatId = msg.chat.id;
+  const userId = msg.from.id;
+  const users = loadUsers();
+
+  const user = users[userId];
+  if (!user) {
+    bot.sendMessage(chatId, "❌ Profilin bulunamadı. /start komutunu kullanarak kayıt olabilirsin.");
+    return;
+  }
+
+  const profileMsg = `
+🛡️ KAISSAVA Profilin:
+Adın: ${user.name}
+Seviye: ${user.level}
+XP: ${user.xp}
+Coin: ${user.coins}
+Sınıf: ${user.class}
+Envanterinde: ${user.inventory.length} eşya
+Ekipmanlar:
+  Kılıç: ${user.equipment.sword || "Yok"}
+  Zırh: ${user.equipment.chest || "Yok"}
+  Eldiven: ${user.equipment.gloves || "Yok"}
+  Bot: ${user.equipment.boots || "Yok"}
+  Omuz: ${user.equipment.shoulder || "Yok"}
+`;
+
+  bot.sendMessage(chatId, profileMsg);
+});
+
 bot.onText(/\/play/, (msg) => {
   const chatId = msg.chat.id;
   const userId = msg.from.id;
-
-  const baseUrl = process.env.RENDER_EXTERNAL_URL.replace(/^https?:\/\//, "");
   const webAppUrl = `https://webapp-tr3a.onrender.com/index.html?user_id=${userId}`;
 
   bot.sendMessage(chatId, "🎮 Oyunu başlatmak için aşağıdaki butona tıkla:", {
@@ -64,74 +98,4 @@ bot.onText(/\/play/, (msg) => {
       ]
     }
   });
-});
-
-// /pvp komutu - rakip seçimi ve savaş
-bot.onText(/\/pvp (.+)/, (msg, match) => {
-  const chatId = msg.chat.id;
-  const userId = msg.from.id;
-  const opponentUsername = match[1].replace('@', '').trim();
-
-  // users.json'dan kullanıcıları oku
-  let users = {};
-  if (fs.existsSync(USERS_FILE)) {
-    users = JSON.parse(fs.readFileSync(USERS_FILE, "utf-8"));
-  }
-
-  // Kullanıcı ID'si bulma (kullanıcı adı ile)
-  const opponentEntry = Object.entries(users).find(([id, user]) => user.name.toLowerCase() === opponentUsername.toLowerCase());
-
-  if (!opponentEntry) {
-    bot.sendMessage(chatId, "Rakip bulunamadı veya henüz kayıtlı değil.");
-    return;
-  }
-
-  const opponentId = opponentEntry[0];
-
-  // Basit PvP sonucu: rastgele kazanan
-  const user = users[userId];
-  const opponent = users[opponentId];
-
-  if (!user || !opponent) {
-    bot.sendMessage(chatId, "Kullanıcı bilgileri bulunamadı.");
-    return;
-  }
-
-  if (user.banned || opponent.banned) {
-    bot.sendMessage(chatId, "Engellenmiş kullanıcılar savaşamaz.");
-    return;
-  }
-
-  const entryFee = user.level < 10 ? 5 : 0;
-  if (user.coins < entryFee) {
-    bot.sendMessage(chatId, `Yetersiz coin! PvP için ${entryFee} coin gerekir.`);
-    return;
-  }
-
-  user.coins -= entryFee;
-
-  const winner = Math.random() < 0.5 ? user : opponent;
-  const loser = winner === user ? opponent : user;
-
-  const xpEarned = Math.floor(Math.random() * 20) + 10;
-  const coinsEarned = Math.floor(Math.random() * 50) + 25;
-  const possibleItems = ["iron_sword", "steel_armor", "magic_gloves"];
-  const newItem = possibleItems[Math.floor(Math.random() * possibleItems.length)];
-
-  winner.xp += xpEarned;
-  winner.coins += coinsEarned;
-
-  if (!winner.inventory.includes(newItem)) {
-    winner.inventory.push(newItem);
-  }
-
-  const newLevel = Math.floor(winner.xp / 50) + 1;
-  const leveledUp = newLevel > winner.level;
-  if (leveledUp) winner.level = newLevel;
-
-  users[userId] = user;
-  users[opponentId] = opponent;
-  fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
-
-  bot.sendMessage(chatId, `${winner.name} kazandı! 🎉\nXP: ${xpEarned}\nCoin: ${coinsEarned}\nYeni eşya: ${newItem}\nSeviye: ${winner.level}${leveledUp ? " (Seviye atladı!)" : ""}`);
 });
