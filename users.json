@@ -1,13 +1,24 @@
 {
-  "12345": {
-    "name": "Sözer",
-    "coins": 100,
-    "xp": 0,
+  "123456789": {
+    "name": "Eylül",
     "level": 1,
-    "inventory": [],
-    "equipment": {},
-    "tasks": ["pvp_1", "buy_1"],
+    "xp": 0,
+    "coins": 100,
+    "class": "warrior",
+    "boost": false,
+    "wallet": "",
+    "banned": false,
+    "tasks": [],
     "completed_tasks": [],
-    "claimed_tasks": []
+    "claimed_tasks": [],
+    "inventory": [],
+    "equipment": {
+      "sword": null,
+      "chest": null,
+      "gloves": null,
+      "boots": null,
+      "shoulder": null
+    },
+    "items_owned": 0
   }
 }
