@@ -1,10 +1,10 @@
 {
-  "pvp_1": {
-    "description": "İlk PvP savaşını kazan",
-    "reward": 100
+  "task1": {
+    "description": "Günlük giriş yap",
+    "reward": 10
   },
-  "buy_1": {
-    "description": "Marketten bir eşya satın al",
-    "reward": 50
+  "task2": {
+    "description": "Bir maç kazan",
+    "reward": 20
   }
 }
