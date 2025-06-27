@@ -7,6 +7,7 @@ const bot = new TelegramBot(token, { polling: true });
 
 const USERS_FILE = "users.json";
 
+// Kullanıcı kaydetme fonksiyonu
 function registerUser(user) {
   let users = {};
   if (fs.existsSync(USERS_FILE)) {
@@ -34,6 +35,7 @@ function registerUser(user) {
   return false;
 }
 
+// /start komutu
 bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
   const user = msg.from;
@@ -46,10 +48,13 @@ bot.onText(/\/start/, (msg) => {
   }
 });
 
+// /play komutu - WebApp açma
 bot.onText(/\/play/, (msg) => {
   const chatId = msg.chat.id;
   const userId = msg.from.id;
+
   const webAppUrl = `https://${process.env.RENDER_EXTERNAL_URL}/index.html?user_id=${userId}`;
+
   bot.sendMessage(chatId, "🎮 Oyunu başlatmak için aşağıdaki butona tıkla:", {
     reply_markup: {
       inline_keyboard: [
