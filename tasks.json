@@ -1,0 +1,10 @@
+{
+  "pvp_1": {
+    "description": "İlk PvP savaşını kazan",
+    "reward": 100
+  },
+  "buy_1": {
+    "description": "Marketten bir eşya satın al",
+    "reward": 50
+  }
+}

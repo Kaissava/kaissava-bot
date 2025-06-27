@@ -1,0 +1,13 @@
+{
+  "12345": {
+    "name": "Sözer",
+    "coins": 100,
+    "xp": 0,
+    "level": 1,
+    "inventory": [],
+    "equipment": {},
+    "tasks": ["pvp_1", "buy_1"],
+    "completed_tasks": [],
+    "claimed_tasks": []
+  }
+}
