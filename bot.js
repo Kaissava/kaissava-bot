@@ -1,4 +1,3 @@
-
 const TelegramBot = require("node-telegram-bot-api");
 const fs = require("fs");
 require("dotenv").config();
@@ -51,7 +50,7 @@ bot.onText(/\/play/, (msg) => {
   const chatId = msg.chat.id;
   const userId = msg.from.id;
 
-  const webAppUrl = `https://YOUR_CYCLIC_URL_HERE/index.html?user_id=${userId}`;
+  const webAppUrl = `https://kaissava.onrender.com/index.html?user_id=${userId}`;
 
   bot.sendMessage(chatId, "🎮 Oyunu başlatmak için aşağıdaki butona tıkla:", {
     reply_markup: {
