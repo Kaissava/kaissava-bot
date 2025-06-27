@@ -66,6 +66,8 @@ app.get("/api/tasks/:id", (req, res) => {
   res.json(response);
 });
 
-app.listen(3000, () => {
-  console.log("KAISSAVA WebApp çalışıyor!");
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`KAISSAVA WebApp çalışıyor! Port: ${PORT}`);
 });
