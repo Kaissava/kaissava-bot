@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "start": "concurrently \"node server.js\" \"node bot.js\""
+    "start": "npx concurrently \"node server.js\" \"node bot.js\""
   },
   "engines": {
     "node": "18.x"
