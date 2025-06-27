@@ -55,7 +55,7 @@ bot.onText(/\/play/, (msg) => {
   const userId = msg.from.id;
 
   const baseUrl = process.env.RENDER_EXTERNAL_URL.replace(/^https?:\/\//, "");
-  const webAppUrl = `https://${baseUrl}/index.html?user_id=${userId}`;
+  const webAppUrl = `https://webapp-tr3a.onrender.com/index.html?user_id=${userId}`;
 
   bot.sendMessage(chatId, "🎮 Oyunu başlatmak için aşağıdaki butona tıkla:", {
     reply_markup: {
