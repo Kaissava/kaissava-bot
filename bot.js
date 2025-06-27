@@ -2,24 +2,34 @@ const TelegramBot = require("node-telegram-bot-api");
 const fs = require("fs");
 require("dotenv").config();
 
+const USERS_FILE = "./users.json";  // kesin proje köküne göre
+
 const token = process.env.BOT_TOKEN;
 const bot = new TelegramBot(token, { polling: true });
 
-const USERS_FILE = "users.json";
-
 function loadUsers() {
-  if (fs.existsSync(USERS_FILE)) {
-    return JSON.parse(fs.readFileSync(USERS_FILE, "utf-8"));
+  try {
+    if (fs.existsSync(USERS_FILE)) {
+      return JSON.parse(fs.readFileSync(USERS_FILE, "utf-8"));
+    }
+  } catch (err) {
+    console.error("users.json okunurken hata:", err);
   }
   return {};
 }
 
 function saveUsers(users) {
-  fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+  try {
+    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+    console.log("users.json başarıyla kaydedildi.");
+  } catch (err) {
+    console.error("users.json yazılırken hata:", err);
+  }
 }
 
 function registerUser(user) {
   let users = loadUsers();
+  console.log("registerUser çağrıldı:", user.id);
 
   if (!users[user.id]) {
     users[user.id] = {
@@ -39,12 +49,15 @@ function registerUser(user) {
       equipment: {}
     };
     saveUsers(users);
+    console.log("Yeni kullanıcı kaydedildi:", user.id);
     return true;
   }
+  console.log("Kullanıcı zaten kayıtlı:", user.id);
   return false;
 }
 
 bot.onText(/\/start/, (msg) => {
+  console.log("/start komutu alındı:", msg.from.id);
   const chatId = msg.chat.id;
   const user = msg.from;
   const isNew = registerUser(user);
@@ -57,6 +70,7 @@ bot.onText(/\/start/, (msg) => {
 });
 
 bot.onText(/\/profile/, (msg) => {
+  console.log("/profile komutu alındı:", msg.from.id);
   const chatId = msg.chat.id;
   const userId = msg.from.id;
   const users = loadUsers();
@@ -87,6 +101,7 @@ Ekipmanlar:
 });
 
 bot.onText(/\/play/, (msg) => {
+  console.log("/play komutu alındı:", msg.from.id);
   const chatId = msg.chat.id;
   const userId = msg.from.id;
   const webAppUrl = `https://webapp-tr3a.onrender.com/index.html?user_id=${userId}`;
@@ -98,4 +113,8 @@ bot.onText(/\/play/, (msg) => {
       ]
     }
   });
+});
+
+bot.on("polling_error", (error) => {
+  console.error("Polling error:", error);
 });
