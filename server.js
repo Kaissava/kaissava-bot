@@ -20,6 +20,7 @@ function getLeagueName(level) {
   return "1. Lig";
 }
 
+// Ana sayfa
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
@@ -47,7 +48,7 @@ app.get("/api/market", (req, res) => {
   res.json(items);
 });
 
-// Görevler API'si
+// Görevler API
 app.get("/api/tasks/:id", (req, res) => {
   const userId = req.params.id;
   const users = JSON.parse(fs.readFileSync("users.json", "utf-8"));
@@ -70,6 +71,70 @@ app.get("/api/tasks/:id", (req, res) => {
   }).filter(t => t !== null);
 
   res.json(response);
+});
+
+// PvP İşlemi
+app.post("/api/pvp/:id", express.json(), (req, res) => {
+  const userId = req.params.id;
+  const { opponentId } = req.body;
+  const usersPath = "users.json";
+  const users = JSON.parse(fs.readFileSync(usersPath, "utf-8"));
+  const user = users[userId];
+  const opponent = users[opponentId];
+
+  if (!user || !opponent) {
+    return res.status(404).json({ error: "Kullanıcı bulunamadı." });
+  }
+
+  if (user.banned || opponent.banned) {
+    return res.status(403).json({ error: "Bir kullanıcı engellenmiş durumda." });
+  }
+
+  const entryFee = user.level < 10 ? 5 : 0;
+  if (user.coins < entryFee) {
+    return res.status(403).json({ error: `Yetersiz coin! PvP için ${entryFee} coin gerekir.` });
+  }
+
+  user.coins -= entryFee;
+
+  // Basit PvP mekanizması: Random kazanan
+  const winner = Math.random() < 0.5 ? user : opponent;
+  const loser = winner === user ? opponent : user;
+
+  // Ödüller
+  const xpEarned = Math.floor(Math.random() * 20) + 10; 
+  const coinsEarned = Math.floor(Math.random() * 50) + 25;
+  const possibleItems = ["iron_sword", "steel_armor", "magic_gloves"];
+  const newItem = possibleItems[Math.floor(Math.random() * possibleItems.length)];
+
+  winner.xp += xpEarned;
+  winner.coins += coinsEarned;
+
+  if (!winner.inventory.includes(newItem)) {
+    winner.inventory.push(newItem);
+  }
+
+  const newLevel = Math.floor(winner.xp / 50) + 1;
+  const leveledUp = newLevel > winner.level;
+  if (leveledUp) winner.level = newLevel;
+
+  // Güncelle
+  users[userId] = user;
+  users[opponentId] = opponent;
+  fs.writeFileSync(usersPath, JSON.stringify(users, null, 2));
+
+  res.json({
+    message: `${winner.name} kazandı!`,
+    winnerId: winner === user ? userId : opponentId,
+    loserId: winner === user ? opponentId : userId,
+    xp: xpEarned,
+    coins: coinsEarned,
+    item: newItem,
+    level: winner.level,
+    leveledUp,
+    league: getLeagueName(winner.level),
+    entryFee
+  });
 });
 
 app.listen(PORT, () => {
