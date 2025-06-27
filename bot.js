@@ -48,12 +48,15 @@ bot.onText(/\/start/, (msg) => {
   }
 });
 
-// /play komutu - WebApp açma
+// /play komutu - WebApp başlatma butonu
 bot.onText(/\/play/, (msg) => {
   const chatId = msg.chat.id;
   const userId = msg.from.id;
 
-  const webAppUrl = `https://${process.env.RENDER_EXTERNAL_URL}/index.html?user_id=${userId}`;
+  // Fazladan https:// var mı kontrol et, temizle
+  const baseUrl = process.env.RENDER_EXTERNAL_URL.replace(/^https?:\/\//, "");
+
+  const webAppUrl = `https://${baseUrl}/index.html?user_id=${userId}`;
 
   bot.sendMessage(chatId, "🎮 Oyunu başlatmak için aşağıdaki butona tıkla:", {
     reply_markup: {
